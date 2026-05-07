@@ -75,3 +75,22 @@ def test_iter_all(history, result):
     items = list(history.iter_all())
     assert [name for name, _ in items] == ["run-001", "run-002"]
     assert all(isinstance(r, EnvDiffResult) for _, r in items)
+
+
+def test_save_overwrites_existing(history, result):
+    """Saving with the same name should overwrite the previous snapshot."""
+    history.save(result, "run-001")
+
+    modified = EnvDiffResult(
+        base=".env.staging",
+        compare=".env.prod",
+        missing_in_compare=set(),
+        missing_in_base={"DB_URL"},
+        mismatched={},
+    )
+    history.save(modified, "run-001")
+
+    loaded = history.load("run-001")
+    assert loaded.base == ".env.staging"
+    assert loaded.missing_in_base == {"DB_URL"}
+    assert history.list_snapshots() == ["run-001"]
