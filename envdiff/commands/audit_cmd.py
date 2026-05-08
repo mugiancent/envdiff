@@ -9,6 +9,9 @@ from envdiff.audit import AuditError, clear_entries, load_entries
 
 DEFAULT_AUDIT_DIR = Path(".envdiff") / "audit"
 
+_HEADER_FMT = f"{'TIMESTAMP':<35} {'ACTION':<12} {'OUTCOME':<14} DETAIL"
+_DIVIDER = "-" * 80
+
 
 def cmd_audit(args: argparse.Namespace) -> int:
     """Entry point for the ``audit`` sub-command.
@@ -25,6 +28,11 @@ def cmd_audit(args: argparse.Namespace) -> int:
     return _do_list(audit_dir)
 
 
+def _format_entry(e) -> str:  # type: ignore[no-untyped-def]
+    """Return a single audit entry formatted as a fixed-width table row."""
+    return f"{e.timestamp:<35} {e.action:<12} {e.outcome:<14} {e.detail}"
+
+
 def _do_list(audit_dir: Path) -> int:
     try:
         entries = load_entries(audit_dir=audit_dir)
@@ -36,10 +44,10 @@ def _do_list(audit_dir: Path) -> int:
         print("No audit entries found.")
         return 0
 
-    print(f"{'TIMESTAMP':<35} {'ACTION':<12} {'OUTCOME':<14} DETAIL")
-    print("-" * 80)
+    print(_HEADER_FMT)
+    print(_DIVIDER)
     for e in entries:
-        print(f"{e.timestamp:<35} {e.action:<12} {e.outcome:<14} {e.detail}")
+        print(_format_entry(e))
     return 0
 
 
