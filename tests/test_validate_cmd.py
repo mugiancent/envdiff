@@ -88,3 +88,13 @@ def test_json_output_invalid(env_dir: Path, capsys) -> None:
     data = json.loads(capsys.readouterr().out)
     assert data["valid"] is False
     assert "PORT" in data["type_errors"]
+
+
+def test_empty_env_with_no_required_keys_returns_zero(env_dir: Path) -> None:
+    """An empty .env file should be valid when the schema has no required keys."""
+    env_path = env_dir / ".env"
+    schema_path = env_dir / "schema.json"
+    write_env(env_path, "")
+    write_schema(schema_path, {"OPTIONAL_KEY": {"required": False}})
+    args = make_args(str(env_path), str(schema_path))
+    assert cmd_validate(args) == 0
